@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Charity Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 720px;
+            margin: 2rem auto;
+        }
+
+        #chat {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            height: 400px;
+            overflow: auto;
+        }
+
+        .msg {
+            margin: 0.6rem 0;
+        }
+
+        .user {
+            text-align: right;
+        }
+
+        .bot {
+            text-align: left;
+            color: #111;
+        }
+
+        .bubble {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .user .bubble {
+            background: #0b84ff;
+            color: white;
+        }
+
+        .bot .bubble {
+            background: #f1f1f1;
+            color: #111;
+        }
+
+        #entry {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Chat with us</h3>
+    <div id="chat"></div>
+
+    <div id="entry">
+        <input id="q" type="text" placeholder="Ask a question..." />
+        <button id="send">Send</button>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const q = document.getElementById('q');
+        const send = document.getElementById('send');
+        const API = 'http://127.0.0.1:8080';
+
+        function addMessage(text, who = 'bot') {
+            const div = document.createElement('div');
+            div.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
+            div.innerHTML = `<div class="bubble">${text}</div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        async function sendQuery() {
+            const text = q.value.trim();
+            if (!text) return;
+            addMessage(text, 'user');
+            q.value = '';
+            try {
+                const res = await fetch(API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                addMessage(data.answer || "Sorry, something went wrong.");
+            } catch (err) {
+                addMessage("Error contacting server. Try again later.");
+            }
+        }
+
+        send.addEventListener('click', sendQuery);
+        q.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendQuery(); });
+    </script>
+</body>
+
+</html>
