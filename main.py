@@ -15,8 +15,11 @@ app = FastAPI()
 
 # Pydantic uses this code block to validate that any instances of "Query" will have text field with a string value
 # This reduces the risks of runtime errors and simplifies downstream processing.
+
+
 class Query(BaseModel):
     text: str
+
 
 model = SentenceTransformer(MODEL_NAME)
 index = faiss.read_index(os.path.join(OUT_DIR, "faq_index.faiss"))
@@ -25,6 +28,7 @@ with open(os.path.join(OUT_DIR, "faq_meta.pkl"), "rb") as f:
 
 # Pickling the DataFrame saves the processed metadata alongside your vector index.
 # Unpickling restores the DataFrame for use in your application, enabling efficient retrieval and response generation.
+
 
 @app.post("/chat")
 async def chat(q: Query):
@@ -35,7 +39,8 @@ async def chat(q: Query):
     faiss.normalize_L2(emb)
 
     k = 3
-    D, I = index.search(emb, k)  # D are inner products (cosine because normalized)
+    # D are inner products (cosine because normalized)
+    D, I = index.search(emb, k)
     best_score = float(D[0][0])
     best_idx = int(I[0][0])
 
